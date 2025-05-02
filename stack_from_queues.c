@@ -3,12 +3,12 @@
  * a stack using two queues.  Make sure to add your name and @oregonstate.edu
  * email address below:
  *
- * Name:
- * Email:
+ * Name: Anthony Pham
+ * Email: phamanth@oregonstate.edu
  */
 
 #include <stdio.h>
-
+#include <stdlib.h>
 #include "queue.h"
 #include "stack_from_queues.h"
 
@@ -17,8 +17,18 @@
  * your stack and return a pointer to the stack structure.
  */
 struct stack_from_queues* stack_from_queues_create() {
-  return NULL;
+  struct stack_from_queues* stack = malloc(sizeof(struct stack_from_queues));
+  if (stack == NULL) {
+    fprintf(stderr, "Memory allocation failed in stack_from_queues_create()\n");
+    exit(1);
+  }
+
+  stack->q1 = queue_create();
+  stack->q2 = queue_create();
+  return stack;
 }
+
+
 
 /*
  * This function should free all of the memory allocated to a stack, including
@@ -29,7 +39,13 @@ struct stack_from_queues* stack_from_queues_create() {
  *     exit the program with an error if stack is NULL.
  */
 void stack_from_queues_free(struct stack_from_queues* stack) {
-
+  if (stack == NULL) {
+    fprintf(stderr, "Error: stack_from_queues_free() called with NULL stack pointer\n");
+    exit(1);
+  }
+  queue_free(stack->q1);
+  queue_free(stack->q2);
+  free(stack);
 }
 
 /*
@@ -44,8 +60,14 @@ void stack_from_queues_free(struct stack_from_queues* stack) {
  *   Should return 1 if the stack is empty or 0 otherwise.
  */
 int stack_from_queues_isempty(struct stack_from_queues* stack) {
-  return 1;
+  if (stack == NULL) {
+    fprintf(stderr, "Error: stack_from_queues_isempty() called with NULL stack pointer\n");
+    exit(1);
+  }
+ 
+  return queue_isempty(stack->q1);
 }
+
 
 /*
  * Should push a new value onto a stack.
@@ -56,8 +78,26 @@ int stack_from_queues_isempty(struct stack_from_queues* stack) {
  *   value - the new value to be pushed onto the stack
  */
 void stack_from_queues_push(struct stack_from_queues* stack, int value) {
+  if (stack == NULL) {
+    fprintf(stderr, "Error: stack_from_queues_push() called with NULL stack pointer\n");
+    exit(1);
+  }
 
+  queue_enqueue(stack->q2, value);
+  
+ 
+  while (!queue_isempty(stack->q1)) {
+    int front = queue_dequeue(stack->q1);
+    queue_enqueue(stack->q2, front);
+  }
+  
+
+  struct queue* temp = stack->q1;
+  stack->q1 = stack->q2;
+  stack->q2 = temp;
 }
+
+
 
 /*
  * Should return a stack's top value without removing that value from the
@@ -72,8 +112,17 @@ void stack_from_queues_push(struct stack_from_queues* stack, int value) {
  *   Should return the value stored at the top of the stack.
  */
 int stack_from_queues_top(struct stack_from_queues* stack) {
-  return 0;
+  if (stack == NULL) {
+    fprintf(stderr, "Error: stack_from_queues_top() called with NULL stack pointer\n");
+    exit(1);
+  }
+  if (stack_from_queues_isempty(stack)) {
+    fprintf(stderr, "Error: stack_from_queues_top() called on an empty stack\n");
+    exit(1);
+  }
+  return queue_front(stack->q1);
 }
+
 
 /*
  * Should remove the top element from a stack and return its value.
@@ -88,5 +137,14 @@ int stack_from_queues_top(struct stack_from_queues* stack) {
  *   is popped.
  */
 int stack_from_queues_pop(struct stack_from_queues* stack) {
-  return 0;
+  if (stack == NULL) {
+    fprintf(stderr, "Error: stack_from_queues_pop() called with NULL stack pointer\n");
+    exit(1);
+  }
+  if (stack_from_queues_isempty(stack)) {
+    fprintf(stderr, "Error: stack_from_queues_pop() called on an empty stack\n");
+    exit(1);
+  }
+  return queue_dequeue(stack->q1);
 }
+

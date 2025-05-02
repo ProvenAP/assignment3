@@ -17,18 +17,18 @@
  * your queue and return a pointer to the queue structure.
  */
 struct queue_from_stacks* queue_from_stacks_create() {
+    struct queue_from_stacks* queue = malloc(sizeof(struct queue_from_stacks));
+    if (queue == NULL) {
+        fprintf(stderr, "Memory allocation failed in queue_from_stacks_create()\n");
+        exit(1);
+    }
 
-  struct queue_from_stacks* queue = malloc(sizeof(struct queue_from_stacks));
-  if (queue == NULL) {
-      fprintf(stderr, "Memory allocation failed in queue_from_stacks_create()\n");
-      exit(1);
-  }
-
-
-  queue->inbox = stack_create();
-  queue->outbox = stack_create();
-  return queue;
+    queue->s1 = stack_create();
+    queue->s2 = stack_create();
+    return queue;
 }
+
+
 
 
 /*
@@ -40,16 +40,15 @@ struct queue_from_stacks* queue_from_stacks_create() {
  *     exit the program with an error if queue is NULL.
  */
 void queue_from_stacks_free(struct queue_from_stacks* queue) {
-  if (queue == NULL) {
-      fprintf(stderr, "Error: queue_from_stacks_free() called with NULL queue pointer\n");
-      exit(1);
-  }
-  
-  stack_free(queue->inbox);
-  stack_free(queue->outbox);
- 
-  free(queue);
+    if (queue == NULL) {
+        fprintf(stderr, "Error: queue_from_stacks_free() called with NULL queue pointer\n");
+        exit(1);
+    }
+    stack_free(queue->s1);
+    stack_free(queue->s2);
+    free(queue);
 }
+
 
 
 /*
@@ -64,16 +63,17 @@ void queue_from_stacks_free(struct queue_from_stacks* queue) {
  *   Should return 1 if the queue is empty or 0 otherwise.
  */
 int queue_from_stacks_isempty(struct queue_from_stacks* queue) {
-  if (queue == NULL) {
-      fprintf(stderr, "Error: queue_from_stacks_isempty() called with NULL queue pointer\n");
-      exit(1);
-  }
-  
-  if (stack_isempty(queue->inbox) && stack_isempty(queue->outbox))
-    return 1;
-  else
-    return 0;
+    if (queue == NULL) {
+        fprintf(stderr, "Error: queue_from_stacks_isempty() called with NULL queue pointer\n");
+        exit(1);
+    }
+
+    if (stack_isempty(queue->s1) && stack_isempty(queue->s2))
+        return 1;
+    else
+        return 0;
 }
+
 
 /*
  * Should enqueue a new value onto the end of a queue.
@@ -84,13 +84,14 @@ int queue_from_stacks_isempty(struct queue_from_stacks* queue) {
  *   value - the new value to be enqueueed onto the queue
  */
 void queue_from_stacks_enqueue(struct queue_from_stacks* queue, int value) {
-  if (queue == NULL) {
-      fprintf(stderr, "Error: queue_from_stacks_enqueue() called with NULL queue pointer\n");
-      exit(1);
-  }
+    if (queue == NULL) {
+        fprintf(stderr, "Error: queue_from_stacks_enqueue() called with NULL queue pointer\n");
+        exit(1);
+    }
  
-  stack_push(queue->inbox, value);
+    stack_push(queue->s1, value);
 }
+
 
 
 
@@ -107,24 +108,21 @@ void queue_from_stacks_enqueue(struct queue_from_stacks* queue, int value) {
  *   Should return the value stored at the front of the queue.
  */
 int queue_from_stacks_front(struct queue_from_stacks* queue) {
-  if (queue == NULL) {
-      fprintf(stderr, "Error: queue_from_stacks_front() called with NULL queue pointer\n");
-      exit(1);
-  }
-  if (queue_from_stacks_isempty(queue)) {
-      fprintf(stderr, "Error: queue_from_stacks_front() called with empty queue\n");
-      exit(1);
-  }
-
-
-  if (stack_isempty(queue->outbox)) {
-      while (!stack_isempty(queue->inbox)) {
-          int value = stack_pop(queue->inbox);
-          stack_push(queue->outbox, value);
-      }
-  }
- 
-  return stack_top(queue->outbox);
+    if (queue == NULL) {
+        fprintf(stderr, "Error: queue_from_stacks_front() called with NULL queue pointer\n");
+        exit(1);
+    }
+    if (queue_from_stacks_isempty(queue)) {
+        fprintf(stderr, "Error: queue_from_stacks_front() called with empty queue\n");
+        exit(1);
+    }
+    if (stack_isempty(queue->s2)) {
+        while (!stack_isempty(queue->s1)) {
+            int value = stack_pop(queue->s1);
+            stack_push(queue->s2, value);
+        }
+    }
+    return stack_top(queue->s2);
 }
 
 
@@ -142,22 +140,21 @@ int queue_from_stacks_front(struct queue_from_stacks* queue) {
  *   is dequeued.
  */
 int queue_from_stacks_dequeue(struct queue_from_stacks* queue) {
-  if (queue == NULL) {
-      fprintf(stderr, "Error: queue_from_stacks_dequeue() called with NULL queue pointer\n");
-      exit(1);
-  }
-  if (queue_from_stacks_isempty(queue)) {
-      fprintf(stderr, "Error: queue_from_stacks_dequeue() called with empty queue\n");
-      exit(1);
-  }
-
-  
-  if (stack_isempty(queue->outbox)) {
-      while (!stack_isempty(queue->inbox)) {
-          int value = stack_pop(queue->inbox);
-          stack_push(queue->outbox, value);
-      }
-  }
- 
+    if (queue == NULL) {
+        fprintf(stderr, "Error: queue_from_stacks_dequeue() called with NULL queue pointer\n");
+        exit(1);
+    }
+    if (queue_from_stacks_isempty(queue)) {
+        fprintf(stderr, "Error: queue_from_stacks_dequeue() called with empty queue\n");
+        exit(1);
+    }
+    if (stack_isempty(queue->s2)) {
+        while (!stack_isempty(queue->s1)) {
+            int value = stack_pop(queue->s1);
+            stack_push(queue->s2, value);
+        }
+    }
+    return stack_pop(queue->s2);
+}
   return stack_pop(queue->outbox);
 }

@@ -148,13 +148,14 @@ int queue_from_stacks_dequeue(struct queue_from_stacks* queue) {
         fprintf(stderr, "Error: queue_from_stacks_dequeue() called with empty queue\n");
         exit(1);
     }
+    // If s2 is empty, transfer items from s1 to s2.
     if (stack_isempty(queue->s2)) {
         while (!stack_isempty(queue->s1)) {
             int value = stack_pop(queue->s1);
             stack_push(queue->s2, value);
         }
     }
+    // Return the front element from s2.
     return stack_pop(queue->s2);
 }
-  return stack_pop(queue->outbox);
-}
+
